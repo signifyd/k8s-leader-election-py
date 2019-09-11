@@ -1,6 +1,5 @@
 import time
 import logging
-from os import sys, path
 from kubernetes import config
 from threading import Thread
 from leaderelection import Elect
