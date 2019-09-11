@@ -21,10 +21,10 @@ if __name__ == '__main__':
     th.setDaemon(True)
     th.start()
     while True:
-        # Check if im the leader. If so continue on with controller logic.
+        time.sleep(5)
+        # Check if I'm the leader. If so continue on with controller logic.
         leader = leaderelection.check_leader()
         if leader:
             logger.info("I am the leader!!")
         else:
             logger.info("I am NOT the leader")
-        time.sleep(5)

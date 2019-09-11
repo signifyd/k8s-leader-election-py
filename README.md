@@ -1,7 +1,7 @@
 # k8s-leader-election-py
-Client-go has a very easy to use leader-election package for kubernetes controllers to utilize [leader-election](https://github.com/kubernetes/client-go/blob/master/tools/leaderelection/leaderelection.go). The pyhton kubernetes-client doesn't have such a method, so this will have to do for now.
+Client-go has a very easy to use leader-election package for kubernetes controllers to utilize [leader-election](https://github.com/kubernetes/client-go/blob/master/tools/leaderelection/leaderelection.go). The python kubernetes-client doesn't have such a method, so this will have to do for now.
 
-## Usage
+## Requirements
 Your controller must have a pod and namespace environment variable defined:
 ```yaml
 env:
@@ -15,6 +15,40 @@ env:
       fieldPath: metadata.namespace
 ```
 
+Your controller must be able to list, get, update and create configmaps.
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sample-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sample-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sample-controller
+roleRef:
+  apiGroup: ""
+  kind: Role
+  name: sample-controller
+subjects:
+- kind: ServiceAccount
+  name: sample-controller
+  apiGroup: ""
+```
+
+## Example
 Sample code:
 ```python
 from threading import Thread
@@ -35,5 +69,3 @@ while True:
     else:
         logger.info("I am NOT the leader")
 ```
-
-An example of this can be found in the sample-controller directory.
