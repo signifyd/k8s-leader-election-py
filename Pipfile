@@ -7,7 +7,6 @@ verify_ssl = true
 
 [packages]
 kubernetes = "*"
-thread = "*"
 
 [requires]
 python_version = "3.7"
