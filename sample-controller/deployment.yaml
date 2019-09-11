@@ -16,7 +16,7 @@ spec:
         version: v1
     spec:
       containers:
-      - image:
+      - image: quay.io/jdamata/py-leader-election-sample-controller
         imagePullPolicy: IfNotPresent
         name: sample-controller
         ports:
