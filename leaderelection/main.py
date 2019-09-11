@@ -9,8 +9,8 @@ class Elect():
         self.leaseDurationSeconds = leaseDurationSeconds
         self.pollDelaySeconds = pollDelaySeconds
         self.configmap = configmap
-        self.namespace = os.getenv('POD')
-        self.pod = os.getenv('NAMESPACE')
+        self.namespace = os.getenv('NAMESPACE')
+        self.pod = os.getenv('POD')
         # Create a CoreV1Api instance
         configuration = client.Configuration()
         self.coreV1Api = client.CoreV1Api(client.ApiClient(configuration))

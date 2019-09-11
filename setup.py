@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 setup(
   name = 'leaderelection',
   packages = ['leaderelection'],
-  version = '0.0.2',
+  version = '0.0.3',
   license = 'GPL3',
   description = 'Kubernetes leader election',
   long_description_content_type = 'text/markdown',
@@ -18,7 +18,7 @@ setup(
   author = 'Joel Damata',
   author_email = 'joel.damata94@gmail.com',
   url = 'https://github.com/jdamata',
-  download_url = 'https://github.com/jdamata/k8s-leader-election-py/archive/0.0.2.tar.gz',
+  download_url = 'https://github.com/jdamata/k8s-leader-election-py/archive/0.0.3.tar.gz',
   keywords = ['Kubernetes', 'Controller', 'Leader', 'Election'],
   install_requires=[
           'kubernetes',
