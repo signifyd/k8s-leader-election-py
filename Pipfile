@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-kubernetes = "*"
+kubernetes = ">=10.0.1<10.1"
 
 [requires]
 python_version = "3.7"
