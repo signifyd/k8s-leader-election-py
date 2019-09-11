@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-controller
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-controller
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: sample-controller
+        version: v1
+    spec:
+      containers:
+      - image:
+        imagePullPolicy: IfNotPresent
+        name: sample-controller
+        ports:
+        - containerPort: 80
+        env:
+        - name: POD
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"

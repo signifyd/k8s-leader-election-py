@@ -1,33 +1,37 @@
-import logging.config
-from os import path
+import logging
+import os
 from kubernetes import client
-from pythonjsonlogger import jsonlogger
-from .k8s import k8s_info, create_endpoint, list_endpoints
+from .k8s import check_configmap, create_configmap, get_configmap, poll_configmap
 
 
-class Elect:
-    def __init__(self):
-        pass
-
-    def poll(self):
-        pass
-
-    def run(self):
-        # Logging config
-        log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
-        logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
-        logger = logging.getLogger(__name__)
-
+class Elect():
+    def __init__(self, leaseDurationSeconds=45, pollDelaySeconds=15, configmap='sample-leader-election-configmap'):
+        self.leaseDurationSeconds = leaseDurationSeconds
+        self.pollDelaySeconds = pollDelaySeconds
+        self.configmap = configmap
+        self.namespace = os.getenv('POD')
+        self.pod = os.getenv('NAMESPACE')
         # Create a CoreV1Api instance
         configuration = client.Configuration()
-        CoreV1Api = client.CoreV1Api(client.ApiClient(configuration))
+        self.coreV1Api = client.CoreV1Api(client.ApiClient(configuration))
+        logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
 
-        # Return dictionary with controller information
-        controller_dict = k8s_info()
-
-        # If endpoint does not exist, create it and assume leadership.
-        if not check_endpoint(CoreV1Api, controller_dict['namespace'], controller_dict['deploymentName']):
-            create_endpoint(CoreV1Api, controller_dict['namespace'], controller_dict['body'])
-        # Else start to poll for leadership status
+    def check_leader(self):
+        cmap = get_configmap(self.coreV1Api, self.namespace, self.configmap)
+        if cmap.data['current-leader'] == self.pod:
+            return True
         else:
-            poll(CoreV1Api, controller_dict)
+            self.logger.info('{} is currently the leader.'.format(cmap.data['current-leader']))
+            return False
+
+    def run(self):
+        # If configmap does not exist, create it and assume leadership. Otherwise poll configmap.
+        if not check_configmap(self.coreV1Api, self.namespace, self.configmap):
+            self.logger.info('Creating leader election configmap.')
+            create_configmap(self.coreV1Api, self.namespace, self.configmap, self.pod)
+            self.logger.info('Starting leader election poll.')
+            poll_configmap(self.coreV1Api, self.namespace, self.configmap, self.pod, self.pollDelaySeconds, self.leaseDurationSeconds)
+        else:
+            self.logger.info('Starting leader election poll.')
+            poll_configmap(self.coreV1Api, self.namespace, self.configmap, self.pod, self.pollDelaySeconds, self.leaseDurationSeconds)

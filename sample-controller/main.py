@@ -1,28 +1,31 @@
-import logging.config
 import time
+import logging
 from os import sys, path
 from kubernetes import config
-from pythonjsonlogger import jsonlogger
-
-if __name__ == '__main__' and __package__ is None:
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from leaderelection import Elect
-
-# Logging config
-log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.ini')
-logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
+from threading import Thread
+from leaderelection import Elect
 
 # K8s authentication
 try:
     config.load_incluster_config()
 except:
-    logger.info("Can't use incluster config. Attempting to use ~/.kube/config")
     config.load_kube_config()
 
 if __name__ == '__main__':
-    leaderelection = Elect()
-    leaderelection.run()
+    logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    # Init leader election class
+    leaderelection = Elect(configmap='sample-controller-leader-election')
+    # Run leader election in new thread
+    th = Thread(target=leaderelection.run)
+    th.setDaemon(True)
+    th.start()
     while True:
-        logger.info("I am the leader.")
-        time.sleep(6)
+        # Check if im the leader. If so continue on with controller logic.
+        leader = leaderelection.check_leader()
+        if leader:
+            logger.info("I am the leader!!")
+        else:
+            logger.info("I am NOT the leader")
+        time.sleep(5)
