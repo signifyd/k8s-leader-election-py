@@ -2,7 +2,7 @@ import os
 import yaml
 import time
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from kubernetes import client
 
 logger = logging.getLogger(__name__)
