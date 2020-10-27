@@ -52,7 +52,7 @@ def patch_configmap(coreV1Api, namespace, configmap, pod):
 def poll_configmap(coreV1Api, namespace, configmap, pod, pollDelaySeconds, leaseDurationSeconds):
     while True:
         time.sleep(pollDelaySeconds)
-        timestamp = datetime.now().isoformat()
+        timestamp = datetime.now()
         cmap = get_configmap(coreV1Api, namespace, configmap)
         if cmap.data['current-leader'] == pod:
             # If we are the leader, update the timestamp in configmap
