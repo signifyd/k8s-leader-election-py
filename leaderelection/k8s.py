@@ -57,7 +57,7 @@ def poll_configmap(coreV1Api, namespace, configmap, pod, pollDelaySeconds, lease
         if cmap.data['current-leader'] == pod:
             # If we are the leader, update the timestamp in configmap
             patch_configmap(coreV1Api, namespace, configmap, pod)
-        elif cmap.data['timestamp'] + timedelta(seconds=leaseDurationSeconds) < timestamp:
+        elif datetime.fromisoformat(cmap.data['timestamp']) + timedelta(seconds=leaseDurationSeconds) < timestamp:
             # If timestamp in configmap + leaseDurationSeconds is less
             # than current timestamp, become the leader.
             patch_configmap(coreV1Api, namespace, configmap, pod)
