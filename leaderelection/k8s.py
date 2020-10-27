@@ -1,22 +1,28 @@
-import os
-import yaml
 import time
 import logging
 from datetime import datetime, timedelta
 from kubernetes import client
+from kubernetes.client.rest import ApiException
 
 logger = logging.getLogger(__name__)
 
+
 def check_configmap(coreV1Api, namespace, configmap):
-    cmaps = coreV1Api.list_namespaced_config_map(namespace)
-    for cmap in cmaps.items:
-        if cmap.metadata.name == configmap:
+    try:
+        if get_configmap(coreV1Api, namespace, configmap):
             return True
+    except ApiException as e:
+        if e.status == 404:
+            return False
+        else:
+            raise
     return False
+
 
 def get_configmap(coreV1Api, namespace, configmap):
     configmap = coreV1Api.read_namespaced_config_map(configmap, namespace)
     return configmap
+
 
 def construct_configmap(configmap, namespace, pod):
     timestamp = datetime.now().isoformat()
@@ -32,13 +38,16 @@ def construct_configmap(configmap, namespace, pod):
     cmap.metadata = metadata
     return cmap
 
+
 def create_configmap(coreV1Api, namespace, configmap, pod):
     body = construct_configmap(configmap, namespace, pod)
     coreV1Api.create_namespaced_config_map(namespace, body)
 
+
 def patch_configmap(coreV1Api, namespace, configmap, pod):
     body = construct_configmap(configmap, namespace, pod)
     coreV1Api.patch_namespaced_config_map(configmap, namespace, body)
+
 
 def poll_configmap(coreV1Api, namespace, configmap, pod, pollDelaySeconds, leaseDurationSeconds):
     while True:
